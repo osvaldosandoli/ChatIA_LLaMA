@@ -22,9 +22,9 @@ Esta abordagem garante flexibilidade, segurança e controle total sobre o proces
 
 ## Como executar
 
-### Executando com Docker (recomendado para iniciantes)
+### Executando com Docker
 
-1. Certifique-se de ter o Docker instalado em seu computador:
+1. Certifique-se de ter o Docker instalado e rodando no seu computador:
    - [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 2. Abra o terminal na pasta raiz do projeto.
