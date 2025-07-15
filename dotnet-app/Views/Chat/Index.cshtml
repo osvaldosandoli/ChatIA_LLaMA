@@ -1,0 +1,156 @@
+<!-- Modal -->
+<div id="loadingModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#18181bcc;z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#23232b;padding:32px 40px 28px 40px;border-radius:18px;box-shadow:0 4px 32px #000a;display:flex;flex-direction:column;align-items:center;position:relative;min-width:320px;">
+        <div id="timer" style="position:absolute;top:18px;right:24px;font-size:1.1em;color:#a3e635;font-family:monospace;"></div>
+        <div style="margin-bottom:18px;">
+            <svg width="48" height="48" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#a3e635" stroke-width="6" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="0">
+                    <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
+                </circle>
+            </svg>
+        </div>
+        <div style="color:#e5e5e5;font-size:1.15em;">Aguardando a resposta da IA...</div>
+    </div>
+</div>
+@model dotnet_app.Models.Chat
+
+@{
+    ViewData["Title"] = "Chat com LLaMA";
+}
+
+<style>
+    body {
+        background: #18181b;
+        color: #e5e5e5;
+        font-family: 'Segoe UI', 'Arial', sans-serif;
+        min-height: 100vh;
+    }
+    .chat-container {
+        max-width: 500px;
+        margin: 60px auto 0 auto;
+        background: #23232b;
+        border-radius: 16px;
+        box-shadow: 0 4px 32px #000a;
+        padding: 32px 28px 24px 28px;
+    }
+    h2 {
+        color: #a3e635;
+        text-align: center;
+        margin-bottom: 24px;
+        letter-spacing: 1px;
+    }
+    label {
+        color: #e5e5e5;
+        font-size: 1.1em;
+    }
+    .input-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        margin-bottom: 18px;
+    }
+    input[type="text"] {
+        flex: 1;
+        background: #18181b;
+        border: 1px solid #333;
+        color: #e5e5e5;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 1em;
+        outline: none;
+        transition: border 0.2s;
+    }
+    input[type="text"]:focus {
+        border: 1.5px solid #a3e635;
+    }
+    button {
+        background: linear-gradient(90deg, #a3e635 60%, #65a30d 100%);
+        color: #18181b;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px #0004;
+    }
+    button:hover {
+        background: linear-gradient(90deg, #bef264 60%, #a3e635 100%);
+    }
+    .reply-area {
+        background: linear-gradient(90deg, #23232b 80%, #18181b 100%);
+        border-radius: 10px;
+        margin: 32px auto 0 auto;
+        padding: 22px 20px 18px 20px;
+        color: #e5e5e5;
+        font-size: 1.08em;
+        box-shadow: 0 2px 12px #0003;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-width: 600px;
+        width: 100%;
+        text-align: left;
+        overflow-x: auto;
+        border: 1.5px solid #333;
+    }
+    .reply-area h3 {
+        color: #a3e635;
+        margin-top: 0;
+    }
+</style>
+
+<div class="chat-container">
+    <h2>Chat com LLaMA </h2>
+    <form asp-action="Index" asp-controller="Chat" method="post" autocomplete="off" id="chatForm">
+        <label for="Message">Digite sua pergunta:</label>
+        <div class="input-row">
+            <input type="text" id="Message" name="Message" value="@Model.Message" placeholder="Digite sua pergunta..." autofocus />
+            <button type="submit">Enviar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('chatForm');
+    const modal = document.getElementById('loadingModal');
+    const timerEl = document.getElementById('timer');
+    let timerInterval;
+    let startTime;
+
+    form.addEventListener('submit', function() {
+        // Exibe modal e inicia cronômetro
+        modal.style.display = 'flex';
+        startTime = Date.now();
+        timerEl.textContent = '00:00';
+        timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const sec = String(elapsed % 60).padStart(2, '0');
+            timerEl.textContent = `${min}:${sec}`;
+        }, 1000);
+    });
+
+    window.addEventListener('pageshow', function() {
+        // Esconde modal e para cronômetro ao recarregar/navegar
+        modal.style.display = 'none';
+        clearInterval(timerInterval);
+    });
+
+    // Esconde modal e para cronômetro ao submit completo (após resposta)
+    window.addEventListener('DOMContentLoaded', function() {
+        if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            clearInterval(timerInterval);
+        }
+    });
+</script>
+
+    @if (!string.IsNullOrEmpty(Model.Reply))
+    {
+        <div class="reply-area">
+            <h3 style="color:#a3e635;margin-top:0;margin-bottom:18px;">Resposta:</h3>
+            <pre style="background:transparent;margin:0;padding:0;font-family:inherit;white-space:pre-wrap;word-break:break-word;">@Model.Reply</pre>
+        </div>
+    }
+</div>
